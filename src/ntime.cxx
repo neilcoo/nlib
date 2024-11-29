@@ -12,8 +12,8 @@
 static const long  NS_IN_1_USEC        = 1000;        // Nanoseconds in 1 micreosecond
 static const long  NS_IN_1_MSEC        = 1000000;     // Nanoseconds in one millisecond
 static const long  NS_IN_1_SEC         = 1000000000;  // Nanoseconds in 1 second
-static const long  US_IN_1_MSEC        = 1000;        // Microseconds in 1 millisecond
-static const long  US_IN_1_SEC         = 1000000;     // Microseconds in 1 second
+// static const long  US_IN_1_MSEC        = 1000;        // Microseconds in 1 millisecond
+// static const long  US_IN_1_SEC         = 1000000;     // Microseconds in 1 second
 static const long  MS_IN_1_SEC         = 1000;        // Milliseconds in 1 second
 
 static const long  SECS_IN_1_MINUTE    = 60;

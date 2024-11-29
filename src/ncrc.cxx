@@ -32,7 +32,7 @@ bool computeFileCrc32(  FILE* theFile,
                         unsigned long* theCrc32,
                         unsigned long  theChunkSize )
 {
-    unsigned char chunk[ theChunkSize ];
+    unsigned char* chunk = new unsigned char[ theChunkSize ];
     bool status = true;
     size_t readLength = 0;
     unsigned long runningTotal = 0;
@@ -50,6 +50,8 @@ bool computeFileCrc32(  FILE* theFile,
     if ( status )
     *theCrc32 = runningTotal;
 
+    delete[] chunk;
+
     return( status );
 }
 
@@ -60,7 +62,7 @@ void computeCrc(  const Nbinary& data,
                   Nbinary&       result   )
 {
     const unsigned int nbits = poly.length();
-    char crc[ nbits - 1 ];
+    char* crc = new char[ nbits - 1 ];
     result.initialise( nbits - 1 );
     unsigned int i = 0;
 
@@ -72,18 +74,20 @@ void computeCrc(  const Nbinary& data,
 
     for ( i = 0; i < data.length(); i++ )
         {
-        char DoInvert = ( data[ i ] == '1' ) ^ crc[ nbits - 2 ]; // XOR required?
+        char doInvert = ( data[ i ] == '1' ) ^ crc[ nbits - 2 ]; // XOR required?
 
         for( int j = nbits - 2; j > 0; j-- )
             if ( poly[ ( nbits - j ) - 1 ] == '1' )
-                crc[ j ] = crc[ j - 1 ] ^ DoInvert;
+                crc[ j ] = crc[ j - 1 ] ^ doInvert;
             else
                 crc[ j ] = crc[ j - 1 ];
-        crc[ 0 ] = DoInvert;
+        crc[ 0 ] = doInvert;
         }
 
     for ( i = 0; i < ( nbits - 1 ); i++ )
     result[ ( nbits - 2 ) - i ] = crc[ i ] ? '1' : '0';   // Convert binary to ASCII
+
+   delete[] crc;
 }
 
 

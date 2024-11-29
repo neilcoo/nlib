@@ -18,14 +18,20 @@
 class NthreadPool
 {
 public:
+#ifndef __ANDROID__
     static const Nthread::CORE_AFFINITY DEFAULT_AFFINITY; // Means "use current default".
+#endif
 
     typedef void ( *THREAD_PROC )( void* );
     // Type of user-supplied function to be run as thread.
 
     NthreadPool(    const size_t                 thePoolSize = 0,
-                    const std::string            threadNameRoot = "",
-                    const Nthread::CORE_AFFINITY defaultAffinity = Nthread::CORE_AFFINITY_ALL );
+                    const std::string            threadNameRoot = ""
+#ifndef __ANDROID__
+                    ,
+                    const Nthread::CORE_AFFINITY defaultAffinity = Nthread::CORE_AFFINITY_ALL
+#endif
+                );
     // Constructor.
     // thePoolSize constrains the pool to have no more than thePoolSize threads.
     // If 0, the pool will grow as needed (ad infinitum) and SubmitJob() will never block.
@@ -36,8 +42,12 @@ public:
     // Note: Destructor will wait for pool to be idle (i.e. user tasks to complete) before it completes.
 
     void submitJob( THREAD_PROC                  theThreadProc,
-                    void*                        theThreadParam = NULL,
-                    const Nthread::CORE_AFFINITY affinity = NthreadPool::DEFAULT_AFFINITY );
+                    void*                        theThreadParam = NULL
+#ifndef __ANDROID__
+                    ,
+                    const Nthread::CORE_AFFINITY affinity = NthreadPool::DEFAULT_AFFINITY
+#endif
+                   );
 
     // Submit a job to be run by a pool thread.
     // theThreadProc is a user-supplied function to be run, that will have theThreadParam passed into
@@ -48,9 +58,11 @@ public:
     // Returns the total no. of threads in the pool (both active and not).
     // Always returns the same value unless the pool was created as dynamically sizing.
 
+#ifndef __ANDROID__
     void updatePoolAffinity( const Nthread::CORE_AFFINITY affinity = Nthread::CORE_AFFINITY_ALL );
     // Change the core affinity of all threads in the pool. Will switch threads currently running jobs too.
     // Also updates what the pool knows as DEFAULT_AFFINITY. 0 = All cores.
+#endif
 
     void waitForIdle();
     // Function will return only when all pool threads are idle (i.e. no submitted jobs are still active).
@@ -59,7 +71,9 @@ private:
     typedef struct
         {
         Nthread*                thread;
+#ifndef __ANDROID__
         Nthread:: CORE_AFFINITY affinity;
+#endif
         THREAD_PROC             userProc;
         void*                   userParams;
         Nevent                  startThread;
@@ -70,15 +84,26 @@ private:
         } THREAD_CONTEXT;
 
     static void* threadProc( void* theThreadContext );
-    THREAD_CONTEXT* extendPool( const Nthread::CORE_AFFINITY affinity );
-    THREAD_CONTEXT* getIdleThread( const Nthread::CORE_AFFINITY affinity );
+    THREAD_CONTEXT* extendPool(
+#ifndef __ANDROID__
+                                const Nthread::CORE_AFFINITY affinity
+#endif
+                                                                      );
+
+    THREAD_CONTEXT* getIdleThread(
+#ifndef __ANDROID__
+                                   const Nthread::CORE_AFFINITY affinity
+#endif
+                                                                         );
 
     bool                             m_closing;
     const size_t                     m_poolMaxSize;
     std::vector< THREAD_CONTEXT* >   m_pool;
     Nmutex                           m_poolOwner;
     Nevent                           m_idleCountEvent;
+#ifndef __ANDROID__
     Nthread:: CORE_AFFINITY          m_defaultAffinity;
+#endif
     std::string                      m_threadNameRoot;
 };
 

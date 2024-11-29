@@ -415,7 +415,11 @@ void Nserial::setReadBlocking( const bool theBlockingFlag )
     if ( theBlockingFlag )
         fcntl( m_handle, F_SETFL, 0 );
     else
+#if defined( __ANDROID__ )
+        fcntl( m_handle, F_SETFL, O_NDELAY );  // FNDELAY note defined under Termux. O_NDELAY is an untested guess
+#else
         fcntl( m_handle, F_SETFL, FNDELAY );
+#endif
 }
 
 

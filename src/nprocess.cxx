@@ -115,6 +115,7 @@ pid_t Nprocess::getPid( char* const theProcName )
 }
 
 
+#ifndef __ANDROID__
 void Nprocess::setOurAffinity( const Nthread::CORE_AFFINITY allowedCores )
 {
    unsigned long long flags = allowedCores.getAsInt();
@@ -137,4 +138,4 @@ void Nprocess::setOurAffinity( const Nthread::CORE_AFFINITY allowedCores )
     if ( status )
         NERROR( status, "Nprocess: Could not set affinity for our pid (", ourPid, ")" );
 }
-
+#endif

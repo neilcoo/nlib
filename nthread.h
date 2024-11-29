@@ -14,9 +14,11 @@
 class Nthread
 {
 public:
+#ifndef __ANDROID__
     typedef Nbinary CORE_AFFINITY;
 
     static const CORE_AFFINITY CORE_AFFINITY_ALL;
+#endif
 
     typedef void* ( *NTHREAD_THREAD_PROC )( void* );
     // type of function that will run as a thread
@@ -53,6 +55,7 @@ public:
 
     int getNice();
 
+#ifndef __ANDROID__
     void setThreadAffinity( const CORE_AFFINITY enabledCores = CORE_AFFINITY_ALL );
     // Sets which core(s) the thread will run on. 0 = all.
     // Parameter is a bitmask, LSB = core0, MSB = highest in the current platform.
@@ -60,6 +63,7 @@ public:
 
     CORE_AFFINITY getThreadAffinity();
     // Returns currently set affinity.
+#endif
 
     void setSchedulingModel(    const SCHEDULING_MODEL theModel = SCHEDULING_MODEL::DEFAULT,
                                 const int schedulingPriority = 0 );
@@ -68,11 +72,13 @@ public:
 
     SCHEDULING_MODEL getSchedulingModel();
 
+#ifndef __ANDROID__
     void setSchedulingPriority( const int thePriority = 0 );
     // Note: Scheduling priority is ignored and must be 0 for non-realtime scheduling
     // models (DEFAULT, BATCH and IDLE models). You're probably looking for setNice().
 
     int getSchedulingPriority();
+#endif
 
     void getReturnValue( void** theReturnParam = NULL );
     // Waits for thread to exit. If the storage provided is not NULL,

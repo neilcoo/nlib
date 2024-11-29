@@ -13,7 +13,7 @@ public:
 
     ~Nrandom();
 
-    float getRandomNumber( float minimum = 0, float maximum = RAND_MAX );
+    float getRandomNumber( float minimum = 0, float maximum = (float)RAND_MAX );
 
 protected:
     unsigned int m_seed;

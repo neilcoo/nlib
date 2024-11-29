@@ -28,17 +28,17 @@ NsocketCan::NsocketCan(const std::string device, const bool rxAllCanInterfaces )
 
     if ( !rxAllCanInterfaces )
         {
-        strcpy(ifr.ifr_name, device.c_str() );
-        if ( ioctl(m_socket, SIOCGIFINDEX, &ifr) )
+        strcpy( ifr.ifr_name, device.c_str() );
+        if ( ioctl( m_socket, SIOCGIFINDEX, &ifr ) )
             EERROR("Can't retrieve interface index for device ", device );
         }
 
     // bind socket to CAN interface(s)
     struct sockaddr_can addr;
-    memset( &addr, 0, sizeof(addr) );
+    memset( &addr, 0, sizeof( addr ) );
     addr.can_family = AF_CAN;
     addr.can_ifindex = ifr.ifr_ifindex;
-    if ( bind( m_socket, (struct sockaddr *)&addr, sizeof(addr) ) < 0 )
+    if ( bind( m_socket, (struct sockaddr *)&addr, sizeof( addr) ) < 0 )
         if ( rxAllCanInterfaces )
             EERROR("Can't bind socket to CAN interface for all CAN devices" );
         else
@@ -56,7 +56,7 @@ NsocketCan::~NsocketCan()
 
 void NsocketCan::setRxFilter( const FILTER_LIST filterList )
 {
-    struct can_filter filter[filterList.size()];
+    struct can_filter* filter = new struct can_filter[ filterList.size() ];
 
     for ( size_t i=0; i < filterList.size(); i++ )
         {
@@ -64,18 +64,22 @@ void NsocketCan::setRxFilter( const FILTER_LIST filterList )
         filter[i].can_mask = filterList[i];
         }
 
-    if ( setsockopt( m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &filter, sizeof(filter) ) != 0 )
+    int setStatus = setsockopt( m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &filter, sizeof( filter ) );
+
+    delete[] filter;
+
+    if ( setStatus != 0 )
         EERROR("Can't set CAN filter for device ", m_device );
 }
 
 
-void NsocketCan::tx(    const uint32_t      canId,
-                        const CAN_DATA      data )
+void NsocketCan::tx( const uint32_t  canId,
+                     const CAN_DATA  data )
 {
     size_t dataSize = data.size();
 
     if ( dataSize > 8 )
-        ERROR("NsocketCan::Tx data parameter too long: must be 8 or less.");
+        ERROR( "NsocketCan::Tx data parameter too long: must be 8 or less." );
 
     struct can_frame frame;
     frame.can_id = canId;
@@ -93,7 +97,7 @@ void NsocketCan::tx(    const uint32_t      canId,
 	frame.len8_dlc = dataSize;  // len8_dlc is the new version of can_dlc
 #endif
 
-    for (size_t i=0; i < dataSize; i++)
+    for ( size_t i=0; i < dataSize; i++ )
         frame.data[i] = data[i];
 
     size_t frameSize = sizeof( frame );
@@ -110,11 +114,11 @@ void NsocketCan::tx(    const uint32_t      canId,
 }
 
 
-void NsocketCan::tx(    const CAN_DATA      data,
-                        const uint32_t      canId,
-                        const FRAME_FORMAT  format,
-                        const FRAME_TYPE    type,
-                        const bool          remoteTransmissionRequest )
+void NsocketCan::tx( const CAN_DATA      data,
+                     const uint32_t      canId,
+                     const FRAME_FORMAT  format,
+                     const FRAME_TYPE    type,
+                     const bool          remoteTransmissionRequest )
 {
     canid_t id = 0;
 
@@ -185,5 +189,5 @@ void NsocketCan::setRxOwnMessages( const bool rxOwnMessages )
 {
     int rxMessages = rxOwnMessages ? 1 : 0;
     if ( setsockopt( m_socket, SOL_CAN_RAW, CAN_RAW_RECV_OWN_MSGS, &rxMessages, sizeof(rxMessages) ) != 0 )
-        EERROR("Can't set 'receive own messages' for device ", m_device );
+        EERROR( "Can't set 'receive own messages' for device ", m_device );
 }

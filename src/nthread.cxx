@@ -17,10 +17,11 @@
 
 using namespace std;
 
+#ifndef __ANDROID__
 const Nthread::CORE_AFFINITY Nthread::CORE_AFFINITY_ALL = "0b" + string( std::thread::hardware_concurrency(), '1' );
+#endif
 
 static const Ntime DEATH_WAIT_TIME_MS( 1000 );   // Time (in ms) we allow thread to terminate
-
 
 
 void* Nthread::getTidAndCall( void* theParams )
@@ -121,7 +122,7 @@ int Nthread::getNice()
     return priority;
 }
 
-
+#ifndef __ANDROID__
 void Nthread::setSchedulingPriority( const int thePriority )
 {
     int status = pthread_setschedprio( m_threadId, thePriority );
@@ -141,9 +142,10 @@ int Nthread::getSchedulingPriority()
 
     return param.sched_priority;
 }
+#endif
 
 
-
+#ifndef __ANDROID__
 void Nthread::setThreadAffinity( const CORE_AFFINITY allowedCores )
 {
     unsigned long long flags = allowedCores.getAsInt();
@@ -191,6 +193,7 @@ Nthread::CORE_AFFINITY Nthread::getThreadAffinity()
 
     return retVal;
 }
+#endif
 
 
 void Nthread::setSchedulingModel( const SCHEDULING_MODEL theModel, const int thePriority  )
@@ -307,8 +310,10 @@ void Nthread::killThread()
     // NB. We can't use pthread_kill() with SIGTERM here as that stops the whole
     // process, not just the thread it is called on.
 
+#ifndef __ANDROID__
     bool status = false;
     bool found = true;
+#endif
 
 /* Neil: commented out for now: pthread_cancel seems to screw the main thread up
     int cancelStatus = pthread_cancel( m_threadId ); // send cancel
@@ -328,6 +333,7 @@ void Nthread::killThread()
         }
 */
 
+#ifndef __ANDROID__ // Android doesn't have a pthread_timedjoin
     // Need to join unjoined undetached threads to prevent zombie threads.
     // Can't join detached or previously joined threads though.
     if ( found && !m_joined && !m_detached )
@@ -387,5 +393,6 @@ void Nthread::killThread()
                 break;
             }
         }
+#endif // ifndef __ANDROID__
 }
 

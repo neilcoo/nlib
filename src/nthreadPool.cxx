@@ -4,22 +4,32 @@
 #include "nerror.h"
 #include "nmutex.h"
 
+#ifndef __ANDROID__
 const Nthread::CORE_AFFINITY NthreadPool::DEFAULT_AFFINITY(-1);
 // DEFAULT_AFFINITY is a magic number not an actual affinity.
 // It is used with SubmitJob() to mean use the default (set by calling UpdatePoolAffinity() ).
 // If UpdatePoolAffinity has never been called, it is equivalent to Nthread::CORE_AFFINITY_ALL.
+#endif
 
 NthreadPool::NthreadPool( const size_t                 thePoolSize,
-                          const std::string            threadNameRoot,
-                          const Nthread::CORE_AFFINITY defaultAffinity ) : m_closing( false ),
+                          const std::string            threadNameRoot
+#ifndef __ANDROID__
+                          ,
+                          const Nthread::CORE_AFFINITY defaultAffinity
+#endif
+                                                                       ) : m_closing( false ),
                                                                            m_poolMaxSize( thePoolSize ),
                                                                            m_idleCountEvent( true ),
+#ifndef __ANDROID__
                                                                            m_defaultAffinity( defaultAffinity ),
+#endif
                                                                            m_threadNameRoot( threadNameRoot )
 {
+#ifndef __ANDROID__
     // 0 explicitly means all cores. Default affinity starts out as all cores.
     if ( m_defaultAffinity == DEFAULT_AFFINITY )
         m_defaultAffinity = Nthread::CORE_AFFINITY_ALL;
+#endif
 
     // Initialise worker threads.
     // Doing this rather than on demand front-loads the performance hit, and also avoids
@@ -27,7 +37,11 @@ NthreadPool::NthreadPool( const size_t                 thePoolSize,
     // so m_pool.size() would be zero.
     for ( size_t i = 0; i < thePoolSize; i++ )
         {
-        THREAD_CONTEXT* idleThread = extendPool( m_defaultAffinity );
+        THREAD_CONTEXT* idleThread = extendPool(
+#ifndef __ANDROID__
+                                                m_defaultAffinity
+#endif
+                                                                   );
         if ( idleThread )
             {
             idleThread->idle = true;   // ExtendPool() Also atomically marks the thread as not
@@ -78,7 +92,11 @@ void* NthreadPool::threadProc( void* theThreadContext )
 }
 
 
-NthreadPool::THREAD_CONTEXT* NthreadPool::extendPool( const Nthread::CORE_AFFINITY theAffinity )
+NthreadPool::THREAD_CONTEXT* NthreadPool::extendPool( 
+#ifndef __ANDROID__
+                                                      const Nthread::CORE_AFFINITY theAffinity
+#endif
+                                                                                               )
 {
     // Add a thread to the pool. Assumes thread is going to be used so returns it already
     // marked as not idle, so that it can't be found and used by another thread doing a SubmitJob.
@@ -94,8 +112,10 @@ NthreadPool::THREAD_CONTEXT* NthreadPool::extendPool( const Nthread::CORE_AFFINI
 
     context->thread = new Nthread( NthreadPool::threadProc, (void*)context, threadName.str() );
 
+#ifndef __ANDROID__
     if ( theAffinity.getAsInt() != Nthread::CORE_AFFINITY_ALL.getAsInt() )
         context->thread->setThreadAffinity( theAffinity );
+#endif
 
     m_pool.push_back( context );
 
@@ -103,7 +123,11 @@ NthreadPool::THREAD_CONTEXT* NthreadPool::extendPool( const Nthread::CORE_AFFINI
 }
 
 
-NthreadPool::THREAD_CONTEXT* NthreadPool::getIdleThread( const Nthread::CORE_AFFINITY theAffinity ) // Returns NULL if we cant grow and no idle thread found
+NthreadPool::THREAD_CONTEXT* NthreadPool::getIdleThread(
+#ifndef __ANDROID__ 
+                                                         const Nthread::CORE_AFFINITY theAffinity
+#endif
+                                                        ) // Returns NULL if we cant grow and no idle thread found
 {
     THREAD_CONTEXT* idleThread = NULL;
 
@@ -112,7 +136,11 @@ NthreadPool::THREAD_CONTEXT* NthreadPool::getIdleThread( const Nthread::CORE_AFF
     if ( !m_idleCountEvent.currentState() )
     // No idle thread. If pool size is unbounded or smaller than max we can make one
         if ( !m_poolMaxSize || ( m_pool.size() < m_poolMaxSize ) )
-            idleThread = extendPool( theAffinity );
+            idleThread = extendPool(
+#ifndef __ANDROID__ 
+                                     theAffinity
+#endif
+                                                 );
 
     if ( !idleThread )  // Wait for thread to become idle
         {
@@ -125,11 +153,13 @@ NthreadPool::THREAD_CONTEXT* NthreadPool::getIdleThread( const Nthread::CORE_AFF
                 {
                 idleThread = m_pool[i];
                 idleThread->idle = false;  // Don't allow a preempting thread to also find this one
+#ifndef __ANDROID__
                 if ( idleThread->affinity.getAsInt() != theAffinity.getAsInt() )
                     {
                     idleThread->thread->setThreadAffinity( theAffinity );
                     idleThread->affinity = theAffinity;
                     }
+#endif
                 }
         }
     m_poolOwner.unlock();
@@ -138,18 +168,28 @@ NthreadPool::THREAD_CONTEXT* NthreadPool::getIdleThread( const Nthread::CORE_AFF
 
 
 void NthreadPool::submitJob( THREAD_PROC                  theThreadProc,
-                             void*                        theThreadParam,
-                             const Nthread::CORE_AFFINITY affinity )
+                             void*                        theThreadParam
+#ifndef __ANDROID__
+                             ,
+                             const Nthread::CORE_AFFINITY affinity
+#endif
+                                                                          )
 {
+#ifndef __ANDROID__
     Nthread::CORE_AFFINITY useAffinity = affinity;
     if ( useAffinity == DEFAULT_AFFINITY )
         useAffinity = m_defaultAffinity;
+#endif
 
     if ( m_closing )
         ERROR( "NthreadPool: SubmitJob called on NthreadPool object being destructed." );
     else
         {
-        THREAD_CONTEXT* idleThread = getIdleThread( useAffinity );
+        THREAD_CONTEXT* idleThread = getIdleThread(
+#ifndef __ANDROID__
+                                                    useAffinity
+#endif
+                                                                );
 
         if ( !idleThread )
             ERROR( "NthreadPool: No idle thread to submit job to." );
@@ -167,6 +207,7 @@ size_t NthreadPool::getPoolSize()
 }
 
 
+#ifndef __ANDROID__
 void NthreadPool::updatePoolAffinity( const Nthread::CORE_AFFINITY theAffinity )
 {
     m_defaultAffinity = theAffinity;
@@ -178,6 +219,7 @@ void NthreadPool::updatePoolAffinity( const Nthread::CORE_AFFINITY theAffinity )
             m_pool[i]->affinity = m_defaultAffinity;
             }
 }
+#endif
 
 
 void NthreadPool::waitForIdle() // Wait for all work threads to finish and be idle
@@ -191,4 +233,3 @@ void NthreadPool::waitForIdle() // Wait for all work threads to finish and be id
         }
     m_poolOwner.unlock();
 }
-

@@ -1,3 +1,8 @@
 # nlib
-A miscellaneous collection of useful C++ classes (that I, Neil Cooper wrote).
-This code is free for all to use in any way they want.
+A library of miscellaneous but useful Linux C++ classes (that I, Neil Cooper wrote).
+The primary target platform is Linux but it should also work under other Linux-like
+environments such as Cygwin, WSL and Android (via Termux or similar).
+
+To build the library:
+cmake src
+make

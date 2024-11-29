@@ -21,10 +21,10 @@ public:
     //  RECURSIVE best approximates WIN32 behaviour
 
 
-#ifdef __CYGWIN__
+#if defined ( __CYGWIN__ ) || defined( __ANDROID__ ) 
     typedef enum
         {
-        FAST       = PTHREAD_MUTEX_NORMAL,
+        FAST            = PTHREAD_MUTEX_NORMAL,
         ERRORCHECK	= PTHREAD_MUTEX_ERRORCHECK,
         RECURSIVE	= PTHREAD_MUTEX_RECURSIVE
 
@@ -32,7 +32,7 @@ public:
 #else
     typedef enum
         {
-        FAST       = PTHREAD_MUTEX_FAST_NP,
+        FAST            = PTHREAD_MUTEX_FAST_NP,
         ERRORCHECK	= PTHREAD_MUTEX_ERRORCHECK_NP,
         RECURSIVE	= PTHREAD_MUTEX_RECURSIVE_NP
 

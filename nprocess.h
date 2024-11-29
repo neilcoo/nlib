@@ -36,8 +36,10 @@ public:
 //  Returns the pid of the first running process found with the given name,
 //  or returns 0 if no process with the given name is running.
 
+#ifndef __ANDROID__
    static void setOurAffinity( const Nthread::CORE_AFFINITY allowedCores = Nthread::CORE_AFFINITY_ALL );
 //  Set core affinity for the calling process. 0 = All cores.
+#endif
 
 private:
    static NDAEMON_USER_SIGNAL_HANDLER userSignalHandler;

@@ -5,7 +5,7 @@ if (DEBUG)
 	add_link_options(-fstack-protector-all)
 	add_compile_options(-std=gnu++17 -fPIC -DDEBUG -Wall -g3 -Og -fno-strict-aliasing -Wno-strict-aliasing -Wno-deprecated-declarations -Wno-unused-function -fstack-protector-all -fno-omit-frame-pointer -Wno-dangling-else -pthread)
 else()
-	add_compile_options(-std=gnu++17 -fPIC -Wall -Ofast -fno-strict-aliasing -Wno-strict-aliasing -Wno-deprecated-declarations -Wno-unused-function -fomit-frame-pointer -Wno-dangling-else -pthread)
+	add_compile_options(-std=gnu++17 -fPIC -Wall -O3 -fno-strict-aliasing -Wno-strict-aliasing -Wno-deprecated-declarations -Wno-unused-function -fomit-frame-pointer -Wno-dangling-else -pthread)
 endif()
 
 

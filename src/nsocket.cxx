@@ -109,7 +109,12 @@ void Nsocket::listen(   const unsigned short	thePort,
         sockinfo.sin_addr.s_addr = htonl( INADDR_ANY );	// Use my IP address
 
     // Bind address to socket
-    if ( bind(  m_socket,( struct sockaddr * )&sockinfo, sizeof( sockinfo ) ) )
+    int bindStatus = 0;
+#ifndef __ANDROID__
+     bindStatus =
+#endif
+     bind( m_socket,( struct sockaddr * )&sockinfo, sizeof( sockinfo ) );
+    if ( bindStatus != 0 )
         {
         int e = errno;
         close( m_socket );

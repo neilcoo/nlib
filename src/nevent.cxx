@@ -34,7 +34,7 @@ Nevent::Nevent( const bool           theCountingEventFlag,
     // the mutex returns to the unlocked state.
     // PTHREAD_MUTEX_RECURSIVE_NP best approximates WIN32 behaviour
 
-#ifdef __CYGWIN__
+#if defined ( __CYGWIN__ ) || defined ( __ANDROID__ )
     if ( pthread_mutexattr_settype( &attributes, PTHREAD_MUTEX_NORMAL ) ) // Still need to confirm this is really functionally identical to PTHREAD_MUTEX_FAST_NP
 #else
     if ( pthread_mutexattr_settype( &attributes, PTHREAD_MUTEX_FAST_NP ) )
