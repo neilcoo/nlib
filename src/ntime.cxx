@@ -185,10 +185,28 @@ Ntime Ntime::operator -( const Ntime& theTime )
 }
 
 
-bool Ntime::operator ==( const Ntime& theTime )
+bool Ntime::operator ==( const Ntime& theTime ) const
 {
     return ( ( m_time.tv_sec == theTime.m_time.tv_sec ) &&
              ( m_time.tv_nsec == theTime.m_time.tv_nsec ) );
+}
+
+
+bool Ntime::operator <( const Ntime& theTime ) const
+{
+    return ( ( m_time.tv_sec < theTime.m_time.tv_sec ) ||
+             ( ( m_time.tv_sec == theTime.m_time.tv_sec ) &&
+               ( m_time.tv_nsec < theTime.m_time.tv_nsec ) )
+           );
+}
+
+
+bool Ntime::operator >( const Ntime& theTime ) const
+{
+    return ( ( m_time.tv_sec > theTime.m_time.tv_sec ) ||
+             ( ( m_time.tv_sec == theTime.m_time.tv_sec ) &&
+               ( m_time.tv_nsec > theTime.m_time.tv_nsec ) )
+           );
 }
 
 

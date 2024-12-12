@@ -61,7 +61,10 @@ public:
     Ntime  operator  +( const Ntime& theTime );
     Ntime& operator -=( const Ntime& theTime );
     Ntime  operator  -( const Ntime& theTime );
-    bool   operator ==( const Ntime& theTime );
+
+    bool operator ==( const Ntime& theTime ) const;
+    bool operator >( const Ntime& theTime ) const;
+    bool operator <( const Ntime& theTime ) const;
 
     void addSecs( const long theSecs );
     void addMillisecs( const long long theMillisecs );
