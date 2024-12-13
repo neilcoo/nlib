@@ -25,19 +25,19 @@ static Nmutex printGuard;
 }
 
 
-void Nerror::UseSysLog( const bool theUseSysLogFlag )
+void Nerror::useSysLog( const bool theUseSysLogFlag )
 {
-   useSysLog = theUseSysLogFlag;
+   m_useSysLog = theUseSysLogFlag;
 }
 
 
-bool Nerror::IsUsingSysLog()
+bool Nerror::isUsingSysLog()
 {
-   return useSysLog;
+   return m_useSysLog;
 }
 
 
-static std::string GetErrnoMessage(const int theErrno)
+static std::string getErrnoMessage(const int theErrno)
 {
    // The GNU C Library uses a buffer of 1024 characters for strerror()
    static const int STRERROR_BUFFER_SIZE = 1024;
@@ -70,7 +70,7 @@ static std::string GetErrnoMessage(const int theErrno)
 }
 
 
-static void MakeMessage( const string& theMessage, const int theErrno, string& theBuffer )
+static void makeMessage( const string& theMessage, const int theErrno, string& theBuffer )
 {
    theBuffer = theMessage;
    if ( theErrno )
@@ -78,13 +78,13 @@ static void MakeMessage( const string& theMessage, const int theErrno, string& t
       if ( theBuffer.length() && ( theBuffer[ theBuffer.length() - 1 ] == '.' ) )
          theBuffer.pop_back();
       theBuffer += ": ";
-      theBuffer += GetErrnoMessage( theErrno );
+      theBuffer += getErrnoMessage( theErrno );
       theBuffer += ".";
       }
 }
 
 
-string Nerror::Compose2(std::ostringstream& msgBuf)
+string Nerror::compose2(std::ostringstream& msgBuf)
 {
    return "";
 }
@@ -95,15 +95,15 @@ string Nerror::Compose2(std::ostringstream& msgBuf)
 // include a LOG_DEBUG flag, however the syslogd default setting is that
 // LOG_DEBUG output does not appear in the log.
 // To avoid confusion I've therefore decided to omit the LOG_DEBUG flag.
-void Nerror::Warn(   const string&        theMessage,
+void Nerror::warn(   const string&        theMessage,
                      const char*          theFilename,
                      const unsigned long  theLineNo,
                      const int            theErrno    )
 {
    string message;
-   MakeMessage( theMessage, theErrno, message );
+   makeMessage( theMessage, theErrno, message );
 
-   if ( IsUsingSysLog() )
+   if ( isUsingSysLog() )
       syslog(  LOG_WARNING,   // strictly we should add LOG_DEBUG here. See Note 1 above
                "Warning in file %s line %lu: %s",
                theFilename, theLineNo , message.c_str() );
@@ -112,28 +112,28 @@ void Nerror::Warn(   const string&        theMessage,
 }
 
 
-void Nerror::Warn(   const string&  theMessage,
+void Nerror::warn(   const string&  theMessage,
                      const int      theErrno   )
 {
    string message;
-   MakeMessage( theMessage, theErrno, message );
+   makeMessage( theMessage, theErrno, message );
 
-   if ( IsUsingSysLog() )
+   if ( isUsingSysLog() )
       syslog( LOG_WARNING, "Warning: %s", message.c_str() );
    else
       PrintErr( "Warning: " << message );
 }
 
 
-void Nerror::Log( const string&        theMessage,
+void Nerror::log( const string&        theMessage,
                   const char*          theFilename,
                   const unsigned long  theLineNo,
                   const int            theErrno    )
 {
    string message;
-   MakeMessage( theMessage, theErrno, message );
+   makeMessage( theMessage, theErrno, message );
 
-   if ( IsUsingSysLog() )
+   if ( isUsingSysLog() )
       syslog(  LOG_INFO,   // strictly we should add LOG_DEBUG here. See note 1 above
                "File %s line %lu: %s",
                theFilename, theLineNo , message.c_str()  );
@@ -142,13 +142,13 @@ void Nerror::Log( const string&        theMessage,
 }
 
 
-void Nerror::Log( const string& theMessage,
+void Nerror::log( const string& theMessage,
                   const int     theErrno   )
 {
    string message;
-   MakeMessage( theMessage, theErrno, message );
+   makeMessage( theMessage, theErrno, message );
 
-   if ( IsUsingSysLog() )
+   if ( isUsingSysLog() )
       syslog( LOG_INFO, "%s", message.c_str() );
    else
       Print( message );
@@ -163,12 +163,12 @@ NerrorException::NerrorException(   const std::string&   theErrorMsg,
                                                                            m_errno( theErrno )
 
 {
-   MakeMessage( theErrorMsg.c_str(), theErrno, m_msg );
+   makeMessage( theErrorMsg.c_str(), theErrno, m_msg );
 }
 
 #ifdef NERROR_USE_SYSLOG
-   bool Nerror::useSysLog = true;
+   bool Nerror::m_useSysLog = true;
 #else
-   bool Nerror::useSysLog = false;
+   bool Nerror::m_useSysLog = false;
 #endif
 

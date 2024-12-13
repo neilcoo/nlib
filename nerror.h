@@ -1,7 +1,6 @@
-#ifndef NERROR_H
-#define NERROR_H
+#pragma once
 
-// Nerror v1.6 by Neil Cooper 30th December 2019
+// Nerror v1.7 by Neil Cooper 30th December 2019
 // Nerror provides a complete exception-based error-handling mechanism via 5 macros:
 // HANDLE_NERRORS, NERROR_HANDLER, ERROR, WARN and LOG.
 //
@@ -14,7 +13,7 @@
 // more detailed reporting takes place. Since Nerror v1.5, use of this macro is
 // generally no longer necessary, just use HANDLE_NERRORS instead.
 //
-// 3 macros are provided to easily generate Log and Warning messages, and to
+// 3 macros are provided to easily generate log and warning messages, and to
 // remove the need to create, populate and throw an NerrorException object by hand.
 //
 // ERROR( <msg>... )
@@ -51,7 +50,7 @@
 //
 // By default, all reporting from the above macros is output on the CERR stream with the
 // exception that LOG messages go to COUT.
-// If compiler symbol NERROR_USE_SYSLOG is defined, or NERROR::UseSysLog( true )
+// If compiler symbol NERROR_USE_SYSLOG is defined, or Nerror::useSysLog( true )
 // was called at runtime, all subsequent output will go to the system log ( syslogd )
 // instead. This allows for control of the error and logging output which
 // is especially useful in the development of system applications such as daemons
@@ -77,7 +76,7 @@
 // Example explicit handler usage (deprecated).
 // Note: Using this form, each pthread will need their own instance of NERROR_HANDLER.
 //
-// void SafeMain( const int ac, const char* av[] )
+// void safeMain( const int ac, const char* av[] )
 // {
 //    // Use this like a 'real' main ....
 //    LOG( "Starting up" );
@@ -134,17 +133,17 @@ private:
 
 
 #ifdef DEBUG
-#define LOG( msg... ) Nerror::Log( Nerror::Compose( msg ), __FILE__, __LINE__, 0 )
+#define LOG( msg... ) Nerror::log( Nerror::Compose( msg ), __FILE__, __LINE__, 0 )
 
-#define ELOG( msg... ) Nerror::Log( Nerror::Compose( msg ), __FILE__, __LINE__, errno )
+#define ELOG( msg... ) Nerror::log( Nerror::Compose( msg ), __FILE__, __LINE__, errno )
 
-#define NLOG( err, msg... ) Nerror::Log( Nerror::Compose( msg ), __FILE__, __LINE__, err )
+#define NLOG( err, msg... ) Nerror::log( Nerror::Compose( msg ), __FILE__, __LINE__, err )
 
-#define WARN( msg... ) Nerror::Warn( Nerror::Compose( msg ), __FILE__, __LINE__, 0 )
+#define WARN( msg... ) Nerror::warn( Nerror::Compose( msg ), __FILE__, __LINE__, 0 )
 
-#define EWARN( msg... ) Nerror::Warn( Nerror::Compose( msg ), __FILE__, __LINE__, errno )
+#define EWARN( msg... ) Nerror::warn( Nerror::Compose( msg ), __FILE__, __LINE__, errno )
 
-#define NWARN( err, msg... ) Nerror::Warn( Nerror::Compose( msg ), __FILE__, __LINE__, err )
+#define NWARN( err, msg... ) Nerror::warn( Nerror::Compose( msg ), __FILE__, __LINE__, err )
 
 // We need to explicitly call exit to stop NERROR_HANDLER just returning after fatal errors.
 // This can be dangerous especially in multithreaded environment where a fatal error just
@@ -155,7 +154,7 @@ private:
     try { guarded; }                                                            \
     catch( NerrorException& error )                                             \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                     "Fatal Error: %s line %lu: %s",                             \
                     error.FileName(),                                           \
@@ -169,7 +168,7 @@ private:
         }                                                                       \
     catch( std::exception& error )                                              \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                     "Fatal Error: %s",                                          \
                     error.what() );                                             \
@@ -179,7 +178,7 @@ private:
         }                                                                       \
     catch(...)                                                                  \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                     "Fatal Error: Caught unknown exception" );                  \
         else                                                                    \
@@ -190,17 +189,17 @@ private:
 
 #else   // ifdef DEBUG
 
-#define LOG( msg... ) Nerror::Log( Nerror::Compose( msg ), 0 )
+#define LOG( msg... ) Nerror::log( Nerror::Compose( msg ), 0 )
 
-#define ELOG( msg... ) Nerror::Log( Nerror::Compose( msg ), errno )
+#define ELOG( msg... ) Nerror::log( Nerror::Compose( msg ), errno )
 
-#define NLOG( err, msg... ) Nerror::Log( Nerror::Compose( msg ), err )
+#define NLOG( err, msg... ) Nerror::log( Nerror::Compose( msg ), err )
 
-#define WARN( msg... ) Nerror::Warn( Nerror::Compose( msg ), 0 )
+#define WARN( msg... ) Nerror::warn( Nerror::Compose( msg ), 0 )
 
-#define EWARN( msg... ) Nerror::Warn( Nerror::Compose( msg ), errno )
+#define EWARN( msg... ) Nerror::warn( Nerror::Compose( msg ), errno )
 
-#define NWARN( err, msg... ) Nerror::Warn( Nerror::Compose( msg ), err )
+#define NWARN( err, msg... ) Nerror::warn( Nerror::Compose( msg ), err )
 
 
 #define NERROR_HANDLER( guarded )                                               \
@@ -208,7 +207,7 @@ private:
     try { guarded; }                                                            \
     catch( NerrorException& error )                                             \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                      "Fatal Error: %s",                                         \
                     error.ErrorMessage() );                                     \
@@ -218,7 +217,7 @@ private:
         }                                                                       \
     catch( std::exception& error )                                              \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                      "Fatal Error: %s",                                         \
                     error.what() );                                             \
@@ -228,7 +227,7 @@ private:
         }                                                                       \
     catch(...)                                                                  \
         {                                                                       \
-        if ( Nerror::IsUsingSysLog() )                                          \
+        if ( Nerror::isUsingSysLog() )                                          \
             syslog( LOG_CRIT | LOG_ERR,                                         \
                    "Fatal Error: Caught unknown exception" );                   \
         else                                                                    \
@@ -245,62 +244,60 @@ private:
 
 #define NERROR( err, msg... ) throw ( NerrorException( Nerror::Compose( msg ), __FILE__, __LINE__, err ) )
 
-#define HANDLE_NERRORS std::set_terminate( Nerror::TerminateHandler )
+#define HANDLE_NERRORS std::set_terminate( Nerror::terminateHandler )
 
 class Nerror
 {
 public:
-    static void UseSysLog( const bool theUseSysLogFlag );
+    static void useSysLog( const bool theUseSysLogFlag );
     // Controls message destination from the error handler and ERROR/WARN/LOG macros.
     // Parameter: true = syslogd, false = CERR/COUT
 
-    static bool IsUsingSysLog();
+    static bool isUsingSysLog();
     // Returns current message destination from the error handler and ERROR/WARN/LOG macros.
     // return: true = syslogd, false = CERR/COUT
 
     // Implementation in header so we can use DEBUG conditional compilation in the app
     // to control level of diagnostic ouput from NERROR_HANDLER even when Nlib has
     // been built without it.
-    static void TerminateHandler()
+    static void terminateHandler()
         { NERROR_HANDLER( std::rethrow_exception( std::current_exception() ) ); }
 
     template <typename ...Msgs>
     static std::string Compose( Msgs&&... msgs )
         {
         std::ostringstream* mBuf = new std::ostringstream;
-        std::string msg = Compose2( *mBuf, msgs... );
+        std::string msg = compose2( *mBuf, msgs... );
         delete mBuf;
         return msg;
         }
 
-    static void Warn( const std::string&   theMessage,
+    static void warn( const std::string&   theMessage,
                       const char*          theFilename,
                       const unsigned long  theLineNo,
                       const int            theErrno     );
 
-    static void Warn( const std::string&  theMessage,
+    static void warn( const std::string&  theMessage,
                       const int           theErrno      );
 
-    static void Log( const std::string&     theMessage,
+    static void log( const std::string&     theMessage,
                      const char*            theFilename,
                        const unsigned long  theLineNo,
                        const int            theErrno    );
 
-    static void Log( const std::string& theMessage,
+    static void log( const std::string& theMessage,
                      const int          theErrno    );
 
 private:
     template <typename First, typename ...Rest>
-    static std::string Compose2( std::ostringstream& msgBuf, const First& first, Rest&&... Args )
+    static std::string compose2( std::ostringstream& msgBuf, const First& first, Rest&&... Args )
         {
         msgBuf << first;
-        Nerror::Compose2( msgBuf, Args... );
+        Nerror::compose2( msgBuf, Args... );
         return msgBuf.str();
         }
 
-    static std::string Compose2( std::ostringstream& msgBuf );
-    static bool useSysLog;
+    static std::string compose2( std::ostringstream& msgBuf );
+    static bool m_useSysLog;
 };
-
-#endif
 
