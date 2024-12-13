@@ -10,7 +10,7 @@
 class Nevent
 {
 public:
-    Nevent(  const bool           theCountingEventFlag = false,
+    Nevent( const bool           theCountingEventFlag = false,
             const unsigned long  theInitialState = 0,
             const bool           theManualResetFlag = false   );
 
