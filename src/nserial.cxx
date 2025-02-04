@@ -425,10 +425,23 @@ void Nserial::setReadBlocking( const bool theBlockingFlag )
 
 void Nserial::setRawMode( const bool theRawFlag )
 {
+    // ECHO - echo input characters
+    // ECHOE - echo erase character as BS-SP-BS
+    // ISIG  - Enable SIGINTR, SIGSUSP, SIGDSUSP, and SIGQUIT signals
+    // OPOST - Postprocess output
+    // See here for more: https://people.na.infn.it/~garufi/didattica/CorsoAcq/SerialProgrammingInPosixOSs.pdf
+
+    // TODO: should probably move ECHO/ECHOE, ISIG etc into their own accessors
     if ( theRawFlag )
+        {
         m_attr.c_lflag &= ~( ICANON | ECHO | ECHOE | ISIG );
+        m_attr.c_oflag &= ~OPOST;
+        }
     else
+        {
         m_attr.c_lflag |= ( ICANON | ECHO | ECHOE );
+        m_attr.c_oflag |= OPOST;
+        }
 }
 
 
