@@ -17,7 +17,7 @@
 
 using namespace std;
 
-Nserial::Nserial( const char*          theDevice,        // = /dev/ttyS0
+Nserial::Nserial( const string         theDevice,        // = /dev/ttyS0
                   const unsigned int   theBaudRate,      // = 9600
                   const unsigned int   theDataBitCount,  // = 8
                   const unsigned char  theParity,        // = 'n'
@@ -49,7 +49,7 @@ Nserial::Nserial( const char*          theDevice,        // = /dev/ttyS0
     if ( theNoCtty )
         flags = flags | O_NOCTTY;
 
-    m_handle = open( theDevice, flags );
+    m_handle = open( theDevice.c_str(), flags );
 
     if ( -1 == m_handle )
         EERROR( "Nserial: Can't open serial port '", theDevice, "'" );

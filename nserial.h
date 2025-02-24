@@ -38,7 +38,7 @@ enum CONTROL_SIGNALS
 };
 #endif
 
-    Nserial( const char*          theDevice         = "/dev/ttyS0", // Serial device
+    Nserial( const std::string    theDevice         = "/dev/ttyS0", // Serial device
              const unsigned int   theBaudRate       = 115200,       // Baud rate
              const unsigned int   theDataBitCount   = 8,            // No. of data bits
              const unsigned char  theParity         = 'n',          // Parity
